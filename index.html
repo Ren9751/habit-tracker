@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>習慣トラッカー</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+  <div class="container">
+    <!-- タブ -->
+    <div class="tabs">
+      <button class="tab-button active" data-tab="today">今日</button>
+      <button class="tab-button" data-tab="log">ログ</button>
+    </div>
+
+    <!-- 今日タブ -->
+    <div id="today-tab" class="tab-content active">
+      <div class="monthly-summary">
+        <div class="summary-title"></div>
+        <div class="summary-items"></div>
+      </div>
+      <div id="task-list" class="task-list"></div>
+      <div class="daily-progress">
+        <span id="progress-text">今日 0/0 完了</span>
+      </div>
+      <button id="settings-button" class="settings-button">設定</button>
+    </div>
+
+    <!-- ログタブ -->
+    <div id="log-tab" class="tab-content">
+      <!-- カレンダー（インライン） -->
+      <div class="log-calendar">
+        <div class="calendar-header">
+          <button id="calendar-prev" class="calendar-nav-button">‹</button>
+          <span id="calendar-title"></span>
+          <button id="calendar-next" class="calendar-nav-button">›</button>
+        </div>
+        <div id="calendar-grid" class="calendar-grid"></div>
+      </div>
+
+      <!-- 日付編集（インライン、初期非表示） -->
+      <div id="day-edit-inline" class="day-edit-inline" style="display:none;">
+        <div class="day-edit-header">
+          <span id="day-edit-title"></span>
+          <button id="day-edit-close" class="day-edit-close-button">×</button>
+        </div>
+        <div id="day-edit-tasks" class="day-edit-tasks"></div>
+      </div>
+
+      <!-- ログ一覧 -->
+      <div id="log-content" class="log-content"></div>
+    </div>
+
+    <!-- 設定モーダル（唯一のモーダル） -->
+    <div id="settings-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>設定</h2>
+          <button id="close-settings" class="close-button">×</button>
+        </div>
+        <div class="settings-section">
+          <h3>タスク管理</h3>
+          <div id="task-manager" class="task-manager"></div>
+          <form id="add-task-form" class="add-task-form">
+            <input type="text" id="add-task-input" class="add-task-input" placeholder="新しいタスク名" maxlength="30">
+            <button type="submit" class="add-task-button">追加</button>
+          </form>
+        </div>
+        <div class="settings-section">
+          <h3>データ</h3>
+          <p class="export-description">タスク一覧と全ての過去ログをJSONファイルとして保存します。ブラウザのデータが消えた場合のバックアップ用です。</p>
+          <button id="export-button" class="export-button">JSONエクスポート</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
