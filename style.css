@@ -693,3 +693,105 @@ body {
 .export-button:hover {
   background: #333;
 }
+
+/* ========================================
+   ご褒美システム
+   ======================================== */
+
+/* ストリーク表示 */
+.streak-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 8px 16px;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
+  border: 1px solid #2a2a5a;
+  border-radius: 12px;
+  animation: streak-pop 0.4s ease;
+}
+
+@keyframes streak-pop {
+  0% { transform: scale(0.8); opacity: 0; }
+  70% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.streak-emoji {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.streak-text {
+  font-size: 15px;
+  font-weight: 600;
+  color: #d4d4ff;
+  letter-spacing: 0.02em;
+}
+
+/* コンフェッティ */
+.confetti-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+.confetti-particle {
+  position: absolute;
+  top: -12px;
+  animation: confetti-fall linear forwards;
+  opacity: 1;
+}
+
+.confetti-particle.circle {
+  border-radius: 50%;
+}
+
+.confetti-particle.square {
+  border-radius: 2px;
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(105vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+/* トースト通知 */
+.toast {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: #222;
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 24px;
+  font-size: 16px;
+  font-weight: 600;
+  border: 1px solid #444;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  z-index: 10000;
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  white-space: nowrap;
+}
+
+.toast.toast-show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
