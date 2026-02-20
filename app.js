@@ -538,6 +538,41 @@ class HabitTracker {
     });
   }
 
+  importData(file) {
+    var self = this;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        var data = JSON.parse(e.target.result);
+        if (!data.tasks || !Array.isArray(data.tasks)) {
+          alert('ファイルの形式が正しくありません。');
+          return;
+        }
+        if (!confirm('現在のデータを上書きしてインポートしますか？')) return;
+
+        Store.saveTasks(data.tasks);
+
+        if (Array.isArray(data.logs)) {
+          data.logs.forEach(function(log) {
+            if (log.date) {
+              Store.saveLog(log.date, log);
+            }
+          });
+        }
+
+        self.tasks = data.tasks;
+        self.renderSummary();
+        self.renderTasks();
+        self.updateProgress();
+        self.renderStreak();
+        alert('インポートが完了しました。');
+      } catch (err) {
+        alert('JSONの読み込みに失敗しました。');
+      }
+    };
+    reader.readAsText(file);
+  }
+
   exportData() {
     var data = {
       tasks: this.tasks,
@@ -927,6 +962,19 @@ class HabitTracker {
     // エクスポート
     document.getElementById('export-button').addEventListener('click', function() {
       self.exportData();
+    });
+
+    // インポート
+    document.getElementById('import-button').addEventListener('click', function() {
+      document.getElementById('import-file-input').click();
+    });
+
+    document.getElementById('import-file-input').addEventListener('change', function(e) {
+      var file = e.target.files[0];
+      if (file) {
+        self.importData(file);
+        e.target.value = '';
+      }
     });
 
     // カレンダー月移動
