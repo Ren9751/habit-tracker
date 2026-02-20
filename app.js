@@ -102,6 +102,7 @@ class HabitTracker {
     this.calendarYear = 0;
     this.calendarMonth = 0;
     this.selectedDate = null;
+    this.celebratedToday = false;
     this.init();
   }
 
@@ -111,6 +112,7 @@ class HabitTracker {
     this.renderSummary();
     this.renderTasks();
     this.updateProgress();
+    this.renderStreak();
     this.setupEventListeners();
   }
 
@@ -410,6 +412,8 @@ class HabitTracker {
     this.renderTasks();
     this.updateProgress();
     this.renderSummary();
+    this.renderStreak();
+    this.checkAndCelebrate();
   }
 
   updateTaskMemo(taskId, memo) {
@@ -739,6 +743,145 @@ class HabitTracker {
     this.selectedDate = null;
     document.getElementById('day-edit-inline').style.display = 'none';
     this.renderCalendar();
+  }
+
+  // ========================================
+  // ご褒美システム
+  // ========================================
+
+  calculateStreak() {
+    var self = this;
+    var today = DateUtils.getTodayDate();
+
+    // 今日の全完了チェック（保存済みログ or 現在のタスク状態）
+    var todayLog = Store.getLog(today);
+    var todayAllDone;
+    if (todayLog) {
+      todayAllDone = todayLog.entries.length > 0 && todayLog.entries.every(function(e) { return e.done; });
+    } else {
+      todayAllDone = self.tasks.length > 0 && self.tasks.every(function(t) { return t.done; });
+    }
+
+    var streak = 0;
+    var checkDate = new Date(today + 'T12:00:00');
+
+    if (todayAllDone) {
+      streak = 1;
+      checkDate.setDate(checkDate.getDate() - 1);
+    } else {
+      // 今日未達成なら昨日から遡る
+      checkDate.setDate(checkDate.getDate() - 1);
+    }
+
+    // 過去ログを遡ってストリーク計算
+    while (true) {
+      var dateStr = DateUtils.formatDate(checkDate);
+      var log = Store.getLog(dateStr);
+      if (!log || log.entries.length === 0) break;
+      var allDone = log.entries.every(function(e) { return e.done; });
+      if (!allDone) break;
+      streak++;
+      checkDate.setDate(checkDate.getDate() - 1);
+    }
+
+    return streak;
+  }
+
+  renderStreak() {
+    var streakEl = document.getElementById('streak-display');
+    var streak = this.calculateStreak();
+
+    if (streak === 0) {
+      streakEl.style.display = 'none';
+      return;
+    }
+
+    var emoji, label;
+    if (streak >= 30) {
+      emoji = '🏆';
+      label = streak + '日連続！伝説！';
+    } else if (streak >= 14) {
+      emoji = '💎';
+      label = streak + '日連続！本物だ！';
+    } else if (streak >= 7) {
+      emoji = '⭐';
+      label = streak + '日連続！週間完璧！';
+    } else if (streak >= 3) {
+      emoji = '🔥';
+      label = streak + '日連続達成中！';
+    } else {
+      emoji = '✨';
+      label = streak + '日連続達成中！';
+    }
+
+    streakEl.style.display = 'flex';
+    streakEl.innerHTML = '<span class="streak-emoji">' + emoji + '</span><span class="streak-text">' + label + '</span>';
+  }
+
+  checkAndCelebrate() {
+    var allDone = this.tasks.length > 0 && this.tasks.every(function(t) { return t.done; });
+    if (allDone && !this.celebratedToday) {
+      this.celebratedToday = true;
+      this.showCelebration();
+    }
+    if (!allDone) {
+      this.celebratedToday = false;
+    }
+  }
+
+  showCelebration() {
+    this.fireConfetti();
+    this.showToast('全部達成！🎉 最高！');
+  }
+
+  fireConfetti() {
+    var container = document.createElement('div');
+    container.className = 'confetti-container';
+    document.body.appendChild(container);
+
+    var colors = ['#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff', '#ff6bdb', '#ff9f43'];
+    var shapes = ['square', 'circle'];
+
+    for (var i = 0; i < 60; i++) {
+      (function(idx) {
+        var particle = document.createElement('div');
+        var shape = shapes[Math.floor(Math.random() * shapes.length)];
+        particle.className = 'confetti-particle ' + shape;
+        particle.style.left = (Math.random() * 100) + 'vw';
+        particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        particle.style.animationDelay = (Math.random() * 0.6) + 's';
+        particle.style.animationDuration = (Math.random() * 1.5 + 1.5) + 's';
+        particle.style.width = (Math.random() * 8 + 6) + 'px';
+        particle.style.height = (Math.random() * 8 + 6) + 'px';
+        container.appendChild(particle);
+      })(i);
+    }
+
+    setTimeout(function() {
+      if (container.parentNode) {
+        container.parentNode.removeChild(container);
+      }
+    }, 3500);
+  }
+
+  showToast(message) {
+    var toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    setTimeout(function() {
+      toast.classList.add('toast-show');
+    }, 10);
+
+    setTimeout(function() {
+      toast.classList.remove('toast-show');
+      setTimeout(function() {
+        if (toast.parentNode) {
+          toast.parentNode.removeChild(toast);
+        }
+      }, 400);
+    }, 2800);
   }
 
   // ========================================
