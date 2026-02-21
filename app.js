@@ -656,10 +656,16 @@ class HabitTracker {
       dayBtn.textContent = day;
 
       var log = Store.getLog(dateStr);
-      if (log) {
-        var hasDone = log.entries.some(function(e) { return e.done; });
-        if (hasDone) {
-          dayBtn.classList.add('has-log');
+      if (log && log.entries.length > 0) {
+        var total = log.entries.length;
+        var done = log.entries.filter(function(e) { return e.done; }).length;
+        var rate = done / total;
+        if (rate === 1) {
+          dayBtn.classList.add('has-log--full');
+        } else if (rate >= 0.5) {
+          dayBtn.classList.add('has-log--mid');
+        } else if (rate > 0) {
+          dayBtn.classList.add('has-log--low');
         }
       }
 

@@ -287,7 +287,15 @@ body {
   cursor: default;
 }
 
-.calendar-day.has-log {
+.calendar-day.has-log--low {
+  background: #0c2010;
+}
+
+.calendar-day.has-log--mid {
+  background: #123218;
+}
+
+.calendar-day.has-log--full {
   background: #1a3a1a;
 }
 
