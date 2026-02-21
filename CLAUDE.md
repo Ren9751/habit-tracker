@@ -1,44 +1,44 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+このファイルは、このリポジトリで作業する Claude Code (claude.ai/code) 向けのガイドです。
 
-## Project Overview
+## プロジェクト概要
 
-A personal PWA habit tracker ("習慣トラッカー") built with pure vanilla HTML/CSS/JavaScript. No build tools, no dependencies, no transpilation. Deployed to GitHub Pages at `https://ren9751.github.io/habit-tracker/`.
+純粋な HTML/CSS/JavaScript で作られた個人用 PWA 習慣トラッカー。ビルドツール・依存パッケージ・トランスパイル不要。GitHub Pages (`https://ren9751.github.io/habit-tracker/`) にデプロイ済み。
 
-## Development
+## 開発方法
 
-No build step required. Open `index.html` directly in a browser, or serve locally:
+ビルド不要。`index.html` をブラウザで直接開くか、ローカルサーバーを起動する:
 
 ```bash
 python3 -m http.server 8000
-# or
+# または
 npx serve .
 ```
 
-No linting or test suite is configured.
+リントやテストは未設定。
 
-## Architecture
+## アーキテクチャ
 
-**Single-file JS app** — all logic lives in `app.js` (~1040 lines) with three classes:
+**単一ファイル JS アプリ** — すべてのロジックは `app.js`（約1040行）に集約され、3つのクラスで構成:
 
-- **`Store`** — localStorage wrapper. Keys: `tasks` (task array), `log-YYYY-MM-DD` (daily log per date), `lastResetDate`.
-- **`DateUtils`** — static date helpers. `getTodayDate()` uses a 3:00 AM cutoff (before 3 AM = previous day).
-- **`HabitTracker`** — main app class, instantiated as `window.app`. Owns all state and rendering.
+- **`Store`** — localStorage のラッパー。キー: `tasks`（タスク配列）、`log-YYYY-MM-DD`（日付ごとのログ）、`lastResetDate`
+- **`DateUtils`** — 日付ユーティリティ。`getTodayDate()` は午前3時を日付切り替えの境界として使用（3時前は前日扱い）
+- **`HabitTracker`** — メインクラス。`window.app` として生成され、すべての状態とレンダリングを管理
 
-**Data model:**
-- `tasks[]` — current task list `{ id, name, order, done, memo }`
-- `log-YYYY-MM-DD` — daily snapshot `{ date, entries: [{ taskId, taskName, done, memo }] }`
+**データモデル:**
+- `tasks[]` — 現在のタスク一覧 `{ id, name, order, done, memo }`
+- `log-YYYY-MM-DD` — 日次スナップショット `{ date, entries: [{ taskId, taskName, done, memo }] }`
 
-**Key logic:**
-- **Daily reset** (`checkAndResetIfNeeded`): On every load, if today > `lastResetDate`, saves yesterday's log snapshot then resets all tasks to `done: false`.
-- **Reward system** (`calculateStreak`, `renderStreak`, `checkAndCelebrate`): Streak counts consecutive days where ALL tasks were completed. Confetti + toast fire once per day when all tasks are done.
-- **Log tab**: Inline calendar shows completion history. Clicking a past date opens an edit panel to retroactively update that day's log.
+**主要ロジック:**
+- **日次リセット** (`checkAndResetIfNeeded`): 起動時に今日 > `lastResetDate` なら、前日のログを保存してすべてのタスクを `done: false` にリセット
+- **リワードシステム** (`calculateStreak`, `renderStreak`, `checkAndCelebrate`): 全タスク達成が続いた連続日数をストリークとしてカウント。全完了時に1日1回だけ紙吹雪＋トーストを表示
+- **ログタブ**: インラインカレンダーで達成履歴を表示。過去の日付をクリックするとその日のログを遡って編集できる
 
-**UI structure** (`index.html`):
-- Two tabs: "今日" (today) and "ログ" (log history)
-- Settings modal for task management (add/delete/reorder) and JSON export/import
+**UI 構成** (`index.html`):
+- 2タブ構成: 「今日」と「ログ」
+- 設定モーダル: タスクの追加・削除・並び替えと JSON エクスポート／インポート
 
 ## Service Worker
 
-`sw.js` caches all static assets under cache key `habit-tracker-v2`. After editing any cached file, bump the version string in `sw.js` to force users to get the updated cache.
+`sw.js` は全静的ファイルをキャッシュキー `habit-tracker-v2` でキャッシュ。いずれかのファイルを編集した後は `sw.js` のバージョン文字列を更新し、ユーザーが新しいキャッシュを取得できるようにする。
