@@ -660,12 +660,14 @@ class HabitTracker {
         var total = log.entries.length;
         var done = log.entries.filter(function(e) { return e.done; }).length;
         var rate = done / total;
-        if (rate === 1) {
-          dayBtn.classList.add('has-log--full');
-        } else if (rate >= 0.5) {
-          dayBtn.classList.add('has-log--mid');
+        if (rate > 0.75) {
+          dayBtn.classList.add('has-log--4');
+        } else if (rate > 0.5) {
+          dayBtn.classList.add('has-log--3');
+        } else if (rate > 0.25) {
+          dayBtn.classList.add('has-log--2');
         } else if (rate > 0) {
-          dayBtn.classList.add('has-log--low');
+          dayBtn.classList.add('has-log--1');
         }
       }
 

@@ -1,4 +1,4 @@
-var CACHE_NAME = 'habit-tracker-v3';
+var CACHE_NAME = 'habit-tracker-v4';
 var urlsToCache = [
   './',
   './index.html',
