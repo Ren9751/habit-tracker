@@ -305,16 +305,21 @@ body {
   cursor: default;
 }
 
-.calendar-day.has-log--low {
-  background: #0c2010;
+.calendar-day.has-log--1 {
+  background: #0e4429;
 }
 
-.calendar-day.has-log--mid {
-  background: #123218;
+.calendar-day.has-log--2 {
+  background: #006d32;
 }
 
-.calendar-day.has-log--full {
-  background: #1a3a1a;
+.calendar-day.has-log--3 {
+  background: #26a641;
+}
+
+.calendar-day.has-log--4 {
+  background: #39d353;
+  color: #000;
 }
 
 .calendar-day.today {
