@@ -126,10 +126,10 @@ class HabitTracker {
       this.tasks = savedTasks;
     } else {
       this.tasks = [
-        { id: this.generateId(), name: '英語動画', order: 0, done: false, memo: '' },
-        { id: this.generateId(), name: '高速音読', order: 1, done: false, memo: '' },
-        { id: this.generateId(), name: '数学ガール', order: 2, done: false, memo: '' },
-        { id: this.generateId(), name: '筋トレ', order: 3, done: false, memo: '' }
+        { id: this.generateId(), name: '運動', order: 0, done: false, memo: '' },
+        { id: this.generateId(), name: '読書', order: 1, done: false, memo: '' },
+        { id: this.generateId(), name: '学習', order: 2, done: false, memo: '' },
+        { id: this.generateId(), name: '早起き', order: 3, done: false, memo: '' }
       ];
       this.saveTasks();
     }
