@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#000000">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>習慣トラッカー</title>
+  <title>HabitLog</title>
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -43,6 +43,36 @@
           <button id="calendar-next" class="calendar-nav-button">›</button>
         </div>
         <div id="calendar-grid" class="calendar-grid"></div>
+      </div>
+
+      <!-- まとめて入力 -->
+      <div class="bulk-input-trigger">
+        <button id="bulk-input-button" class="bulk-input-button">まとめて入力</button>
+      </div>
+
+      <!-- 一括入力パネル（初期非表示） -->
+      <div id="bulk-input-panel" class="bulk-input-panel" style="display:none;">
+        <div class="day-edit-header">
+          <span>まとめて入力</span>
+          <button id="bulk-input-close" class="day-edit-close-button">×</button>
+        </div>
+        <div class="bulk-input-form">
+          <div class="bulk-input-dates">
+            <div>
+              <label>開始日</label>
+              <input type="date" id="bulk-start-date">
+            </div>
+            <div>
+              <label>終了日</label>
+              <input type="date" id="bulk-end-date">
+            </div>
+          </div>
+          <div id="bulk-input-tasks" class="bulk-input-tasks"></div>
+          <div class="bulk-input-actions">
+            <button id="bulk-apply-button" class="add-task-button">入力する</button>
+            <button id="bulk-cancel-button" class="settings-button">キャンセル</button>
+          </div>
+        </div>
       </div>
 
       <!-- 日付編集（インライン、初期非表示） -->

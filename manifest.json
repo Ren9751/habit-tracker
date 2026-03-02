@@ -1,6 +1,6 @@
 {
-  "name": "習慣トラッカー",
-  "short_name": "習慣",
+  "name": "HabitLog",
+  "short_name": "HabitLog",
   "description": "毎日の習慣タスクをタップで完了にできるシンプルな習慣トラッカー",
   "start_url": "./",
   "scope": "./",

@@ -79,8 +79,13 @@ body {
 
 .summary-item {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   font-size: 14px;
+}
+
+.summary-item-main {
+  display: flex;
+  justify-content: space-between;
 }
 
 .summary-item-name {
@@ -89,6 +94,23 @@ body {
 
 .summary-item-count {
   color: #888;
+}
+
+.summary-item-sub {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #888;
+  margin-top: 4px;
+}
+
+.summary-item-start {
+  text-align: left;
+}
+
+.summary-item-streak {
+  text-align: right;
+  color: #4a9;
 }
 
 /* タスクリスト */
@@ -161,10 +183,6 @@ body {
   margin-top: 12px;
   padding-top: 12px;
   border-top: 1px solid #333;
-  display: none;
-}
-
-.task-item.done .task-memo {
   display: block;
 }
 
@@ -820,4 +838,105 @@ body {
 .toast.toast-show {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
+}
+
+/* 一括入力 */
+.bulk-input-trigger {
+  margin-bottom: 12px;
+}
+
+.bulk-input-button {
+  width: 100%;
+  padding: 10px;
+  background: #222;
+  border: 1px solid #444;
+  border-radius: 8px;
+  color: #aaa;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+  min-height: 44px;
+}
+
+.bulk-input-button:hover {
+  background: #333;
+}
+
+.bulk-input-panel {
+  background: #111;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.bulk-input-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 16px;
+}
+
+.bulk-input-dates {
+  display: flex;
+  gap: 12px;
+}
+
+.bulk-input-dates > div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bulk-input-dates label {
+  font-size: 12px;
+  color: #888;
+}
+
+.bulk-input-dates input[type="date"] {
+  width: 100%;
+  padding: 10px;
+  background: #222;
+  border: 1px solid #444;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 14px;
+  min-height: 44px;
+}
+
+.bulk-input-tasks {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bulk-input-task-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #fff;
+  padding: 8px;
+  background: #222;
+  border-radius: 4px;
+  min-height: 44px;
+}
+
+.bulk-input-task-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.bulk-input-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.bulk-input-actions .add-task-button {
+  flex: 1;
+}
+
+.bulk-input-actions .settings-button {
+  flex: 1;
 }

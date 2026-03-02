@@ -205,11 +205,65 @@ class HabitTracker {
     return summary;
   }
 
+  getTaskFirstDate(taskId) {
+    var allLogs = Store.getAllLogs();
+    var firstDate = null;
+    allLogs.forEach(function(log) {
+      if (!log.entries) return;
+      log.entries.forEach(function(entry) {
+        if (entry.taskId === taskId && entry.done) {
+          if (!firstDate || log.date < firstDate) {
+            firstDate = log.date;
+          }
+        }
+      });
+    });
+    return firstDate;
+  }
+
+  calculateTaskStreak(taskId) {
+    var self = this;
+    var today = DateUtils.getTodayDate();
+
+    var todayLog = Store.getLog(today);
+    var todayDone;
+    if (todayLog) {
+      var todayEntry = todayLog.entries.find(function(e) { return e.taskId === taskId; });
+      todayDone = todayEntry ? todayEntry.done : false;
+    } else {
+      var task = self.tasks.find(function(t) { return t.id === taskId; });
+      todayDone = task ? task.done : false;
+    }
+
+    var streak = 0;
+    var checkDate = new Date(today + 'T12:00:00');
+
+    if (todayDone) {
+      streak = 1;
+      checkDate.setDate(checkDate.getDate() - 1);
+    } else {
+      checkDate.setDate(checkDate.getDate() - 1);
+    }
+
+    while (true) {
+      var dateStr = DateUtils.formatDate(checkDate);
+      var log = Store.getLog(dateStr);
+      if (!log) break;
+      var entry = log.entries.find(function(e) { return e.taskId === taskId; });
+      if (!entry || !entry.done) break;
+      streak++;
+      checkDate.setDate(checkDate.getDate() - 1);
+    }
+
+    return streak;
+  }
+
   // ========================================
   // レンダリング
   // ========================================
 
   renderSummary() {
+    var self = this;
     var container = document.querySelector('.monthly-summary');
     var titleEl = container.querySelector('.summary-title');
     var itemsEl = container.querySelector('.summary-items');
@@ -227,6 +281,9 @@ class HabitTracker {
       var itemEl = document.createElement('div');
       itemEl.className = 'summary-item';
 
+      var mainEl = document.createElement('div');
+      mainEl.className = 'summary-item-main';
+
       var nameSpan = document.createElement('span');
       nameSpan.className = 'summary-item-name';
       nameSpan.textContent = data.name;
@@ -235,8 +292,35 @@ class HabitTracker {
       countSpan.className = 'summary-item-count';
       countSpan.textContent = data.count + '日';
 
-      itemEl.appendChild(nameSpan);
-      itemEl.appendChild(countSpan);
+      mainEl.appendChild(nameSpan);
+      mainEl.appendChild(countSpan);
+      itemEl.appendChild(mainEl);
+
+      var firstDate = self.getTaskFirstDate(task.id);
+      var streak = self.calculateTaskStreak(task.id);
+
+      if (firstDate || streak > 0) {
+        var subEl = document.createElement('div');
+        subEl.className = 'summary-item-sub';
+
+        var startSpan = document.createElement('span');
+        startSpan.className = 'summary-item-start';
+        if (firstDate) {
+          var parsed = DateUtils.parseDate(firstDate);
+          startSpan.textContent = '開始: ' + parsed.month + '/' + parsed.day;
+        }
+
+        var streakSpan = document.createElement('span');
+        streakSpan.className = 'summary-item-streak';
+        if (streak > 0) {
+          streakSpan.textContent = '🔥 ' + streak + '日連続';
+        }
+
+        subEl.appendChild(startSpan);
+        subEl.appendChild(streakSpan);
+        itemEl.appendChild(subEl);
+      }
+
       itemsEl.appendChild(itemEl);
     });
   }
@@ -596,6 +680,72 @@ class HabitTracker {
     this.renderSummary();
     this.renderCalendar();
     this.renderLog();
+  }
+
+  openBulkInput() {
+    var sorted = this.getSortedTasks();
+    var tasksContainer = document.getElementById('bulk-input-tasks');
+    tasksContainer.innerHTML = '';
+
+    sorted.forEach(function(task) {
+      var label = document.createElement('label');
+      label.className = 'bulk-input-task-label';
+
+      var checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.value = task.id;
+      checkbox.checked = true;
+
+      var nameSpan = document.createElement('span');
+      nameSpan.textContent = task.name;
+
+      label.appendChild(checkbox);
+      label.appendChild(nameSpan);
+      tasksContainer.appendChild(label);
+    });
+
+    document.getElementById('bulk-input-panel').style.display = 'block';
+  }
+
+  closeBulkInput() {
+    document.getElementById('bulk-input-panel').style.display = 'none';
+  }
+
+  applyBulkInput(startDateStr, endDateStr, selectedTaskIds) {
+    var self = this;
+    var current = new Date(startDateStr + 'T12:00:00');
+    var end = new Date(endDateStr + 'T12:00:00');
+
+    while (current <= end) {
+      var dateStr = DateUtils.formatDate(current);
+      var log = Store.getLog(dateStr);
+      var entries;
+      if (log) {
+        entries = log.entries;
+      } else {
+        entries = self.tasks.map(function(task) {
+          return { taskId: task.id, taskName: task.name, done: false, memo: '' };
+        });
+      }
+
+      entries.forEach(function(entry) {
+        if (selectedTaskIds.indexOf(entry.taskId) !== -1) {
+          entry.done = true;
+        }
+      });
+
+      var hasDone = entries.some(function(e) { return e.done; });
+      if (hasDone) {
+        Store.saveLog(dateStr, { date: dateStr, entries: entries });
+      }
+
+      current.setDate(current.getDate() + 1);
+    }
+
+    this.renderCalendar();
+    this.renderLog();
+    this.renderSummary();
+    this.closeBulkInput();
   }
 
   // ========================================
@@ -995,6 +1145,40 @@ class HabitTracker {
     // 日付編集パネルを閉じる
     document.getElementById('day-edit-close').addEventListener('click', function() {
       self.closeDayEdit();
+    });
+
+    // まとめて入力
+    document.getElementById('bulk-input-button').addEventListener('click', function() {
+      self.openBulkInput();
+    });
+
+    document.getElementById('bulk-input-close').addEventListener('click', function() {
+      self.closeBulkInput();
+    });
+
+    document.getElementById('bulk-cancel-button').addEventListener('click', function() {
+      self.closeBulkInput();
+    });
+
+    document.getElementById('bulk-apply-button').addEventListener('click', function() {
+      var startDateStr = document.getElementById('bulk-start-date').value;
+      var endDateStr = document.getElementById('bulk-end-date').value;
+      if (!startDateStr || !endDateStr) {
+        alert('開始日と終了日を入力してください。');
+        return;
+      }
+      if (startDateStr > endDateStr) {
+        alert('開始日は終了日以前にしてください。');
+        return;
+      }
+      var checkboxes = document.querySelectorAll('#bulk-input-tasks input[type="checkbox"]:checked');
+      var selectedTaskIds = [];
+      checkboxes.forEach(function(cb) { selectedTaskIds.push(cb.value); });
+      if (selectedTaskIds.length === 0) {
+        alert('タスクを1つ以上選択してください。');
+        return;
+      }
+      self.applyBulkInput(startDateStr, endDateStr, selectedTaskIds);
     });
   }
 
