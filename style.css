@@ -662,6 +662,42 @@ body {
   justify-content: center;
 }
 
+.archive-task-button {
+  background: none;
+  border: 1px solid #666;
+  border-radius: 4px;
+  color: #aaa;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 6px 10px;
+  min-height: 44px;
+}
+
+.archive-task-button:hover {
+  border-color: #aaa;
+  color: #fff;
+}
+
+.task-manager-item--archived {
+  opacity: 0.5;
+}
+
+.reactivate-task-button {
+  background: none;
+  border: 1px solid #4a9;
+  border-radius: 4px;
+  color: #4a9;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 6px 10px;
+  min-height: 44px;
+}
+
+.reactivate-task-button:hover {
+  background: #4a9;
+  color: #fff;
+}
+
 /* タスク追加 */
 .add-task-form {
   display: flex;

@@ -152,8 +152,10 @@ class HabitTracker {
         this.saveLog(lastResetDate);
       }
       this.tasks.forEach(function(task) {
-        task.done = false;
-        task.memo = '';
+        if (!task.archived) {
+          task.done = false;
+          task.memo = '';
+        }
       });
       this.saveTasks();
       Store.setLastResetDate(todayDate);
@@ -312,7 +314,7 @@ class HabitTracker {
 
         var streakSpan = document.createElement('span');
         streakSpan.className = 'summary-item-streak';
-        if (streak > 0) {
+        if (streak >= 2) {
           streakSpan.textContent = '🔥 ' + streak + '日連続';
         }
 
@@ -330,7 +332,7 @@ class HabitTracker {
     var taskList = document.getElementById('task-list');
     taskList.innerHTML = '';
 
-    var sortedTasks = this.getSortedTasks();
+    var sortedTasks = this.getSortedActiveTasks();
 
     sortedTasks.forEach(function(task) {
       var taskEl = document.createElement('div');
@@ -473,13 +475,19 @@ class HabitTracker {
   }
 
   updateProgress() {
-    var doneCount = this.tasks.filter(function(t) { return t.done; }).length;
-    var totalCount = this.tasks.length;
+    var activeTasks = this.getSortedActiveTasks();
+    var doneCount = activeTasks.filter(function(t) { return t.done; }).length;
+    var totalCount = activeTasks.length;
     document.getElementById('progress-text').textContent = '今日 ' + doneCount + '/' + totalCount + ' 完了';
   }
 
   getSortedTasks() {
     return this.tasks.slice().sort(function(a, b) { return a.order - b.order; });
+  }
+
+  getSortedActiveTasks() {
+    return this.tasks.filter(function(t) { return !t.archived; })
+      .sort(function(a, b) { return a.order - b.order; });
   }
 
   // ========================================
@@ -539,8 +547,30 @@ class HabitTracker {
     this.renderTaskManager();
   }
 
+  archiveTask(taskId) {
+    var task = this.tasks.find(function(t) { return t.id === taskId; });
+    if (!task) return;
+    task.archived = true;
+    this.saveTasks();
+    this.renderTasks();
+    this.renderSummary();
+    this.updateProgress();
+    this.renderTaskManager();
+  }
+
+  reactivateTask(taskId) {
+    var task = this.tasks.find(function(t) { return t.id === taskId; });
+    if (!task) return;
+    task.archived = false;
+    this.saveTasks();
+    this.renderTasks();
+    this.renderSummary();
+    this.updateProgress();
+    this.renderTaskManager();
+  }
+
   moveTaskUp(taskId) {
-    var sorted = this.getSortedTasks();
+    var sorted = this.getSortedActiveTasks();
     var index = sorted.findIndex(function(t) { return t.id === taskId; });
     if (index <= 0) return;
 
@@ -555,7 +585,7 @@ class HabitTracker {
   }
 
   moveTaskDown(taskId) {
-    var sorted = this.getSortedTasks();
+    var sorted = this.getSortedActiveTasks();
     var index = sorted.findIndex(function(t) { return t.id === taskId; });
     if (index < 0 || index >= sorted.length - 1) return;
 
@@ -578,9 +608,10 @@ class HabitTracker {
     var taskManager = document.getElementById('task-manager');
     taskManager.innerHTML = '';
 
-    var sorted = this.getSortedTasks();
+    var activeTasks = this.getSortedActiveTasks();
+    var archivedTasks = this.tasks.filter(function(t) { return t.archived; });
 
-    sorted.forEach(function(task, index) {
+    activeTasks.forEach(function(task, index) {
       var itemEl = document.createElement('div');
       itemEl.className = 'task-manager-item';
 
@@ -600,11 +631,20 @@ class HabitTracker {
       var downBtn = document.createElement('button');
       downBtn.className = 'move-button';
       downBtn.textContent = '↓';
-      downBtn.disabled = index === sorted.length - 1;
+      downBtn.disabled = index === activeTasks.length - 1;
       downBtn.addEventListener('click', function() { self.moveTaskDown(task.id); });
 
       controlsEl.appendChild(upBtn);
       controlsEl.appendChild(downBtn);
+
+      var archiveBtn = document.createElement('button');
+      archiveBtn.className = 'archive-task-button';
+      archiveBtn.textContent = '中止';
+      archiveBtn.addEventListener('click', function() {
+        if (confirm('「' + task.name + '」を中止しますか？ログは残ります。')) {
+          self.archiveTask(task.id);
+        }
+      });
 
       var deleteBtn = document.createElement('button');
       deleteBtn.className = 'delete-task-button';
@@ -617,6 +657,37 @@ class HabitTracker {
 
       itemEl.appendChild(nameEl);
       itemEl.appendChild(controlsEl);
+      itemEl.appendChild(archiveBtn);
+      itemEl.appendChild(deleteBtn);
+      taskManager.appendChild(itemEl);
+    });
+
+    archivedTasks.forEach(function(task) {
+      var itemEl = document.createElement('div');
+      itemEl.className = 'task-manager-item task-manager-item--archived';
+
+      var nameEl = document.createElement('span');
+      nameEl.className = 'task-manager-name';
+      nameEl.textContent = task.name;
+
+      var reactivateBtn = document.createElement('button');
+      reactivateBtn.className = 'reactivate-task-button';
+      reactivateBtn.textContent = '再開';
+      reactivateBtn.addEventListener('click', function() {
+        self.reactivateTask(task.id);
+      });
+
+      var deleteBtn = document.createElement('button');
+      deleteBtn.className = 'delete-task-button';
+      deleteBtn.textContent = '×';
+      deleteBtn.addEventListener('click', function() {
+        if (confirm('「' + task.name + '」を削除しますか？')) {
+          self.deleteTask(task.id);
+        }
+      });
+
+      itemEl.appendChild(nameEl);
+      itemEl.appendChild(reactivateBtn);
       itemEl.appendChild(deleteBtn);
       taskManager.appendChild(itemEl);
     });
@@ -984,7 +1055,7 @@ class HabitTracker {
     var streakEl = document.getElementById('streak-display');
     var streak = this.calculateStreak();
 
-    if (streak === 0) {
+    if (streak < 2) {
       streakEl.style.display = 'none';
       return;
     }
